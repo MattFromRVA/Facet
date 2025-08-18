@@ -29,7 +29,7 @@ public class Employee : Person
     public string Department { get; set; } = string.Empty;
     public decimal Salary { get; set; }
     public DateTime HireDate { get; set; }
-    
+
     // Override the base property
     public override string DisplayName => $"{FirstName} {LastName} ({EmployeeId})";
 }
@@ -39,7 +39,7 @@ public class Manager : Employee
     public string TeamName { get; set; } = string.Empty;
     public int TeamSize { get; set; }
     public decimal Budget { get; set; }
-    
+
     // Override again
     public override string DisplayName => $"Manager {FirstName} {LastName} - {TeamName}";
 }
@@ -97,16 +97,17 @@ public partial class ManagerDto;
 
 // Basic DTO - excludes sensitive information like Password
 [Facet(typeof(User), "Password", "CreatedAt")]
-public partial class UserDto 
+public partial class UserDto
 {
     // Custom properties that will be set by the mapper
     public string FullName { get; set; } = string.Empty;
+
     public int Age { get; set; }
 }
 
 // DTO with custom mapping
 [Facet(typeof(User), "Password", "CreatedAt", Configuration = typeof(UserDtoWithMappingMapper))]
-public partial class UserDtoWithMapping 
+public partial class UserDtoWithMapping
 {
     public string FullName { get; set; } = string.Empty;
     public int Age { get; set; }
@@ -157,9 +158,9 @@ public partial class ModernUserClass
     public string? AdditionalInfo { get; set; }
 }
 
-class Program
+internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         Console.WriteLine("=== Facet Generator Test Console ===\n");
 
@@ -188,12 +189,15 @@ class Program
         // Test LINQ projections
         TestLinqProjections(users, products);
 
+        // Test shorthand overloads
+        TestShorthandOverloads(users, products, employees, managers);
+
         Console.WriteLine("\n=== All tests completed successfully! ===");
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
     }
 
-    static List<ModernUser> CreateSampleModernUsers()
+    private static List<ModernUser> CreateSampleModernUsers()
     {
         return new List<ModernUser>
         {
@@ -208,7 +212,7 @@ class Program
             },
             new ModernUser
             {
-                Id = "user_002", 
+                Id = "user_002",
                 FirstName = "Bob",
                 LastName = "Dylan",
                 Email = "bob.dylan@example.com",
@@ -218,7 +222,7 @@ class Program
         };
     }
 
-    static void TestInheritanceSupport(List<Employee> employees, List<Manager> managers)
+    private static void TestInheritanceSupport(List<Employee> employees, List<Manager> managers)
     {
         Console.WriteLine("1. Testing Inheritance Support:");
         Console.WriteLine("=============================== cont'd");
@@ -247,7 +251,7 @@ class Program
         }
     }
 
-    static List<User> CreateSampleUsers()
+    private static List<User> CreateSampleUsers()
     {
         return new List<User>
         {
@@ -290,7 +294,7 @@ class Program
         };
     }
 
-    static List<Product> CreateSampleProducts()
+    private static List<Product> CreateSampleProducts()
     {
         return new List<Product>
         {
@@ -330,7 +334,7 @@ class Program
         };
     }
 
-    static List<Employee> CreateSampleEmployees()
+    private static List<Employee> CreateSampleEmployees()
     {
         return new List<Employee>
         {
@@ -363,7 +367,7 @@ class Program
         };
     }
 
-    static List<Manager> CreateSampleManagers()
+    private static List<Manager> CreateSampleManagers()
     {
         return new List<Manager>
         {
@@ -402,7 +406,7 @@ class Program
         };
     }
 
-    static void TestBasicDtoMapping(List<User> users)
+    private static void TestBasicDtoMapping(List<User> users)
     {
         Console.WriteLine("2. Testing Basic DTO Mapping:");
         Console.WriteLine("==============================");
@@ -417,7 +421,7 @@ class Program
         }
     }
 
-    static void TestCustomMappingDto(List<User> users)
+    private static void TestCustomMappingDto(List<User> users)
     {
         Console.WriteLine("3. Testing DTO with Custom Mapping:");
         Console.WriteLine("====================================");
@@ -431,7 +435,7 @@ class Program
         }
     }
 
-    static void TestDifferentFacetKinds(List<User> users, List<Product> products)
+    private static void TestDifferentFacetKinds(List<User> users, List<Product> products)
     {
         Console.WriteLine("4. Testing Different Facet Kinds:");
         Console.WriteLine("==================================");
@@ -464,7 +468,7 @@ class Program
         Console.WriteLine();
     }
 
-    static void TestLinqProjections(List<User> users, List<Product> products)
+    private static void TestLinqProjections(List<User> users, List<Product> products)
     {
         Console.WriteLine("5. Testing LINQ Projections:");
         Console.WriteLine("=============================");
@@ -497,7 +501,7 @@ class Program
         Console.WriteLine();
     }
 
-    static void TestModernRecordFeatures(List<ModernUser> modernUsers)
+    private static void TestModernRecordFeatures(List<ModernUser> modernUsers)
     {
         Console.WriteLine("1.5 Testing Modern Record Features:");
         Console.WriteLine("===================================");
@@ -558,4 +562,81 @@ class Program
             }
         }
     }
+
+    private static void TestShorthandOverloads(List<User> users, List<Product> products, List<Employee> employees)
+    {
+        Console.WriteLine("6. Testing Shorthand Overloads (omit TSource):");
+        Console.WriteLine("===============================");
+
+        Console.WriteLine("Single item (inheritance):");
+        foreach (var e in employees)
+        {
+            try
+            {
+                var dto = e.ToFacet<EmployeeDto>();
+                Console.WriteLine($"  EmployeeDto: {dto.DisplayName} | Dept: {dto.Department} | Hire: {dto.HireDate:yyyy-MM-dd}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Error mapping employee to EmployeeDto: {ex.Message}");
+            }
+        }
+        Console.WriteLine();
+
+        Console.WriteLine("Single item (basic & custom mapping):");
+        foreach (var u in users)
+        {
+            try
+            {
+                var dtoBasic = u.ToFacet<UserDto>();
+                var dtoCustom = u.ToFacet<UserDtoWithMapping>();
+                Console.WriteLine($"  Basic:  {dtoBasic.FirstName} {dtoBasic.LastName} | Active: {dtoBasic.IsActive}");
+                Console.WriteLine($"  Custom: {dtoCustom.FullName} (Age: {dtoCustom.Age}) | Email: {dtoCustom.Email}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Error mapping user to UserDto: {ex.Message}");
+            }
+        }
+        Console.WriteLine();
+
+        // --- IEnumerable: provider-agnostic projection ---
+        Console.WriteLine("IEnumerable.SelectFacets<TTarget>:");
+        var activeUsers = users.Where(u => u.IsActive).SelectFacets<UserDtoWithMapping>().ToList();
+        foreach (var dto in activeUsers)
+        {
+            try
+            {
+                Console.WriteLine($"  {dto.FullName} (Age: {dto.Age})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Error mapping user to UserDtoWithMapping: {ex.Message}");
+            }
+        }
+        Console.WriteLine();
+
+        Console.WriteLine("IQueryable.SelectFacet<TTarget> (simulated):");
+        var availableProducts =
+            products.AsQueryable()
+                    .Where(p => p.IsAvailable)
+                    .SelectFacet<ProductDto>()
+                    .ToList();
+
+        foreach (var p in availableProducts)
+        {
+            try
+            {
+                Console.WriteLine($"  {p.Name}: ${p.Price} - {p.Description}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Error mapping product to ProductDto: {ex.Message}");
+            }
+        }
+        Console.WriteLine();
+    }
+
+    public class UnrelatedDto
+    { }
 }
